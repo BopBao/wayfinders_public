@@ -3,6 +3,7 @@ from .models import SearchObject
 from .models import SearchTags
 from .serializers import SearchObjectSerializer
 from .serializers import SearchTagsSerializer
+from wayfinders.functions import add_to_queryset
 
 
 class SearchObjectAPI(viewsets.ModelViewSet):

@@ -13,17 +13,50 @@ from .models import Permissions
 from .models import UserRole
 from .models import Gallery
 from .models import Application
+from wayfinders.functions import add_to_queryset
 
 
 class MemberAPI(viewsets.ModelViewSet):
     serializer_class = MemberSerializer
     http_method_names = ['get', 'head', 'post', 'put']
-    queryset = Member.objects.all()
+
+    def get_queryset(self):
+        name = self.request.query_params.get('name')
+        description = self.request.query_params.get('description')
+        website = self.request.query_params.get('website')
+        public = self.request.query_params.get('public')
+
+        queryset_params = {}
+        add_to_queryset(queryset_params, 'name__icontains', name)
+        add_to_queryset(queryset_params, 'description__icontains', description)
+        add_to_queryset(queryset_params, 'website__icontains', website)
+        
+        if(public == "true"):
+            add_to_queryset(queryset_params, 'public', True)
+        elif(public == "false"):
+            add_to_queryset(queryset_params, 'public', False)
+
+        if queryset_params:
+            return Member.objects.filter(**queryset_params)
+        return Member.objects.all()
 
 class MemberUserAPI(viewsets.ModelViewSet):
     serializer_class = MemberUserSerializer
     http_method_names = ['get', 'head', 'post', 'put']
-    queryset = MemberUser.objects.all()
+    
+    def get_queryset(self):
+        primary_member = self.request.query_params.get('primary_member')
+        first_name = self.request.query_params.get('first_name')
+        last_name = self.request.query_params.get('last_name')
+
+        queryset_params = {}
+        add_to_queryset(queryset_params, 'primary_member__pk', primary_member)
+        add_to_queryset(queryset_params, 'first_name', first_name)
+        add_to_queryset(queryset_params, 'website', last_name)
+
+        if queryset_params:
+            return MemberUser.objects.filter(**queryset_params)
+        return MemberUser.objects.all()
 
 class UserToMemberAPI(viewsets.ModelViewSet):
     serializer_class = UserToMemberSerializer
