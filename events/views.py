@@ -1,6 +1,6 @@
 import math
 from datetime import datetime
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views import View
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -363,4 +363,50 @@ def get_hours(hours, minutes):
         return get_hours(hours, minutes)
     else:
         return hours
+
+class CreateParticipant(LoginPermissionMixin, CreateView):
+    template_name = 'create_edit_model.html'
+    model = Participants
+    fields = ('member', 'is_administrator')
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateParticipant, self).get_context_data(**kwargs)
+        context['button_text'] = 'Create Participant'
+        return context
+
+    def dispatch(self, *args, **kwargs):
+        return super(CreateParticipant, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        event_pk = self.kwargs.get('pk')
+        event = Event.objects.get(pk=event_pk)
+        obj.events = event
+        obj.save()
+
+        
+        success_url = '/event/' + str(event_pk)
+        return HttpResponseRedirect(success_url)
+
+class RemoveParticipant(LoginPermissionMixin, DeleteView):
+    template_name = 'create_edit_model.html'
+    model = Participants
+
+    def get_context_data(self, **kwargs):
+        context = super(RemoveParticipant, self).get_context_data(**kwargs)
+        context['button_text'] = 'Remove Participant'
+        return context
+    
+    def dispatch(self, *args, **kwargs):
+        return super(RemoveParticipant, self).dispatch(*args, **kwargs)
+    
+    def delete(self, request, *arg, **kwargs):
+        pk = self.kwargs.get('pk')
+        event_pk = self.kwargs.get('event_pk')
+        
+        participant = Participants.objects.get(pk=pk)
+        participant.delete()
+
+        success_url = "/event/" + str(event_pk)
+        return HttpResponseRedirect(success_url )
             

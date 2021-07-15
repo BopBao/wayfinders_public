@@ -16,7 +16,7 @@ from django.utils.html import conditional_escape as esc
 from login.views import LoginPermissionMixin
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('cal.views')
 
 class MyCalendar(LoginPermissionMixin, View):
     def get(self, request):
@@ -43,14 +43,14 @@ class EventCalendar(HTMLCalendar):
                 cssclass += ' filled'
                 body = ['<div class="event-area">']
                 for event in self.events[day]:
-                    if event.busy_private == False and event.allow_booking == False:
+                    if (event.busy_private == False and event.allow_booking == False) and (event.public == True):
                         event_link = '/event/' + str(event.pk)
                         event_html = '<a href=' + event_link + '>'
                         body.append('<div>')
                         body.append(event_html)
                         body.append(esc(str(event.time.hour) + "-" + event.name))
                         body.append('</a></div>')
-                    elif event.busy_private == True:
+                    elif event.busy_private == True or event.public == False:
                         body.append('<div class="busy-private">')
                         body.append(esc("Busy " + str(event.time.hour) + 
                         ":" + str(event.time.minute) + " - " + str(event.end_time.hour) +
@@ -115,7 +115,6 @@ def get_calendar_context(calendar, filter, filter_params, date):
         for i in range(0, len(filter_params)):
             filter_params[i] = int(filter_params[i])
         events = Event.objects.filter(date__year=date.year, date__month=date.month, calendar=calendar, sub_calendar__in=filter_params)
-        logger.error(events)
         html_c = EventCalendar(events, calendar).formatmonth(date.year, date.month)
         context['html_calendar'] = mark_safe(html_c)
         context['no_params'] = False
@@ -152,10 +151,11 @@ class CalendarDate(LoginPermissionMixin, View):
     def get(self, request, pk, year, month):
         c = CalendarModel.objects.get(pk=pk)
         f = Filter.objects.filter(calendar=c)
+        filter_params = request.GET.getlist('filters')
         today = datetime.today()
         new_date = today.replace(year=year, month=month)
         
-        context = get_calendar_context(c, f, new_date)
+        context = get_calendar_context(c, f, filter_params, new_date)
 
         return render(request, self.template_name, context)
 

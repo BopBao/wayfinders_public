@@ -14,7 +14,6 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.forms import PasswordChangeForm
-from .mixin import FormsetMixin
 
 ##           FORMS              ##
 from .forms import ApplicationForm
@@ -25,7 +24,7 @@ from .forms import UpdateRoleForm
 ##                              ##
 
 ##           MODELS             ##
-from .models import MemberUser
+from .models import ApplicationUpload, MemberUser
 from .models import Member
 from .models import UserToMember
 from .models import UserRole
@@ -725,50 +724,48 @@ class UpdatePassword(PasswordChangeView):
     success_url = '/my_profile'
     form_class = PasswordChangeForm
 
-class Application(View):
-    template_name = 'members/application.html'
-    form_class = ApplicationForm
+class Application(CreateView):
+    template_name = 'create_edit_model.html'
+    model = ApplicationModel
+    fields = '__all__'
 
-    def get(self, request, *args, **kwargs):
-        form = ApplicationForm
-        context = {
-            'form': form
-        }
-        
-        return render(request, self.template_name, context)
+    def get_context_data(self, **kwargs):
+        context = super(Application, self).get_context_data(**kwargs)
+        context['button_text'] = 'Submit Application'
+        return context
 
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            # add field = form.cleaned_data['field_name']
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            organization_name = form.cleaned_data['organization_name']
-            organization_email = form.cleaned_data['organization_email']
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        #obj.membership_since = timezone.now()
+        obj.save() 
+        messages.add_message(self.request, messages.SUCCESS, "Thank you for the application. Someone from Wayfinders will follow up with you soon")
+        return HttpResponseRedirect('/')
 
-            #application.field_name = field_name
-            application = ApplicationModel()
-            application.name = name
-            application.email = email
-            application.org_name = organization_name
-            application.org_email = organization_email
-            application.save()
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.ERROR, "Please correct the form below.")
+        return super().form_invalid(form)
 
-            return HttpResponseRedirect('/submission')
-        messages.add_message(request, messages.ERROR, "Please correct the form below.")
-        return render(request, self.template_name, {'form': form})
-
-
-class ApplicationSubmission(View):
-    template_name = "members/application_submission.html"
+class ApplicationSubmission(CreateView):
+    template_name = 'create_edit_model.html'
+    model = ApplicationUpload
+    fields = '__all__'
     
-    def get(self, request):
-        return render(request, self.template_name, {})
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationSubmission, self).get_context_data(**kwargs)
+        context['button_text'] = 'Submit'
+        return context
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.save()
+
+        messages.add_message(self.request, messages.SUCCESS, "Thank you for the application. Someone from Wayfinders will follow up with you soon")
+        success_url = '/'
+        return HttpResponseRedirect(success_url)
 
 class ApplicationChoice(View):
     template_name = 'members/application_choice.html'
 
     def get(self, request):
         return render(request, self.template_name)
-
-

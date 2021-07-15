@@ -64,12 +64,16 @@ from skills.views import ViewSkill
 from skills.views import MySkills
 from skills.views import AddSkill
 from skills.views import UploadSkills
+from skills.views import RemoveSkillFromMember
+from skills.views import RemoveSkillFromUser
 from industries.views import ViewIndustry
 from industries.views import AddIndustry
 from industries.views import AddMemberIndustry
 from industries.views import MyIndustries
 from industries.views import MemberIndustries
 from industries.views import UploadIndustries
+from industries.views import RemoveIndustryFromMember
+from industries.views import RemoveIndustryFromUser
 from groups.views import CreateGroup
 from groups.views import EditGroup
 from groups.views import LeaveGroup
@@ -94,6 +98,8 @@ from events.views import ViewEvent
 from events.views import CreateBooking
 from events.views import BookEvent
 from events.views import MarkBusy
+from events.views import CreateParticipant
+from events.views import RemoveParticipant
 from search.views import Search
 
 from members.api import MemberAPI
@@ -125,6 +131,46 @@ from events.api import ParticipantsAPI
 from events.api import GuestParticipantAPI
 from cal.api import CalendarAPI
 from cal.api import FilterAPI
+
+## API ##
+router = routers.DefaultRouter()
+# From Member application(7)
+router.register('api/members', MemberAPI, 'api/members')
+router.register('api/member_users', MemberUserAPI, 'api/member_users')
+router.register('api/users_members', UserToMemberAPI, 'api/users_members')
+router.register('api/permissions', PermissionsAPI, 'api/permissions')
+router.register('api/user_role', UserRoleAPI, 'api/member_users')
+router.register('api/gallery', GalleryAPI, 'api/gallery')
+router.register('api/application', ApplicationAPI, 'api/application')
+# From Skills application(3)
+router.register('api/skills', SkillAPI, 'api/skills')
+router.register('api/member_skills', MemberToSkillsAPI, 'api/member_skills')
+router.register('api/user_skills', UserToSkillsAPI, 'user_skills')
+# From Search application(2)
+router.register('api/search_object', SearchObjectAPI, 'api/search_object')
+router.register('api/search_tags', SearchTagsAPI, 'api/search_tags')
+# From Industries application(3)
+router.register('api/industry', IndustryAPI, 'api/industry')
+router.register('api/member_industry', MemberToIndustryAPI, 'api/member_industry')
+router.register('api/user_industry', UsertoIndustryAPI, 'api/user_industry')
+# From Groups application(3)
+router.register('api/groups', GroupsAPI, 'api/groups')
+router.register('api/rules', RulesAPI, 'api/rules')
+router.register('api/group_member', GroupToMemberAPI, 'api/group_member')
+# From Forum application(5)
+router.register('api/discussion', DiscussionAPI, 'api/discussion')
+router.register('api/post', PostAPI, 'api/post')
+router.register('api/reply', ReplyAPI, 'api/reply')
+router.register('api/member_like_or_flag_post', MemberLikeOrFlagPostAPI, 'api/member_like_or_flag_post')
+router.register('api/member_like_or_flag_reply', MemberLikeOrFlagReplyAPI, 'api/member_like_or_flag_reply')
+# From Event application(4)
+router.register('api/event', EventAPI, 'api/event')
+router.register('api/invitation', InvitationAPI, 'api/invitation')
+router.register('api/participants', ParticipantsAPI, 'api/participants')
+router.register('api/guest_participant', GuestParticipantAPI, 'api/guest_participant')
+# From Cal application(8)
+router.register('api/calendar', CalendarAPI, 'api/calendar')
+router.register('api/filter', FilterAPI, 'api/filter')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -197,6 +243,8 @@ urlpatterns = [
     path('join_event/<int:event_pk>/<int:user_pk>', event_views.join_view),
     path('invites/<int:pk>', Invites.as_view()),
     path('get_invite/<int:pk>', Invite.as_view()),
+    path('add_participant/<int:pk>', CreateParticipant.as_view()),
+    path('remove_participant/<int:pk>/<int:event_pk>', RemoveParticipant.as_view()),
 
     ## GROUP APP 
     path('create_group/<int:pk>', CreateGroup.as_view()),
@@ -212,6 +260,8 @@ urlpatterns = [
     path('member_skills/<int:pk>', MemberSkill.as_view()),
     path('add_member_skill/<int:pk>', AddMemberSkill.as_view()),
     path('upload_skills/', UploadSkills.as_view()),
+    path('remove_skill_user/<int:pk>/<int:user_pk>', RemoveSkillFromUser.as_view()),
+    path('remove_skill_member/<int:pk>/<int:member_pk>', RemoveSkillFromMember.as_view()),
 
     ## INDUSTRY APP ##
     path('industry/<int:pk>', ViewIndustry.as_view()),
@@ -220,51 +270,16 @@ urlpatterns = [
     path('member_industries/<int:pk>', MemberIndustries.as_view()),
     path('my_industries/<int:pk>', MyIndustries.as_view()),
     path('upload_industries/', UploadIndustries.as_view()),
+    path('remove_industry_user/<int:pk>/<int:user_pk>', RemoveIndustryFromUser.as_view()),
+    path('remove_industry_member/<int:pk>/<int:member_pk>', RemoveIndustryFromMember.as_view()),
 
     ## SEARCH APP ##
     path('global_search/<str:query>', Search.as_view()),
     path('search/<str:query>', DirectorySearch.as_view()),
+
+    path('api/', include(router.urls))
 ]
 
-## API ##
-router = routers.DefaultRouter()
-# From Member application(7)
-router.register('api/members', MemberAPI, 'api/members')
-router.register('api/member_users', MemberUserAPI, 'api/member_users')
-router.register('api/users_members', UserToMemberAPI, 'api/users_members')
-router.register('api/permissions', PermissionsAPI, 'api/permissions')
-router.register('api/user_role', UserRoleAPI, 'api/member_users')
-router.register('api/gallery', GalleryAPI, 'api/gallery')
-router.register('api/application', ApplicationAPI, 'api/application')
-# From Skills application(3)
-router.register('api/skills', SkillAPI, 'api/skills')
-router.register('api/member_skills', MemberToSkillsAPI, 'api/member_skills')
-router.register('api/user_skills', UserToSkillsAPI, 'user_skills')
-# From Search application(2)
-router.register('api/search_object', SearchObjectAPI, 'api/search_object')
-router.register('api/search_tags', SearchTagsAPI, 'api/search_tags')
-# From Industries application(3)
-router.register('api/industry', IndustryAPI, 'api/industry')
-router.register('api/member_industry', MemberToIndustryAPI, 'api/member_industry')
-router.register('api/user_industry', UsertoIndustryAPI, 'api/user_industry')
-# From Groups application(3)
-router.register('api/groups', GroupsAPI, 'api/groups')
-router.register('api/rules', RulesAPI, 'api/rules')
-router.register('api/group_member', GroupToMemberAPI, 'api/group_member')
-# From Forum application(5)
-router.register('api/discussion', DiscussionAPI, 'api/discussion')
-router.register('api/post', PostAPI, 'api/post')
-router.register('api/reply', ReplyAPI, 'api/reply')
-router.register('api/member_like_or_flag_post', MemberLikeOrFlagPostAPI, 'api/member_like_or_flag_post')
-router.register('api/member_like_or_flag_reply', MemberLikeOrFlagReplyAPI, 'api/member_like_or_flag_reply')
-# From Event application(4)
-router.register('api/event', EventAPI, 'api/event')
-router.register('api/invitation', InvitationAPI, 'api/invitation')
-router.register('api/participants', ParticipantsAPI, 'api/participants')
-router.register('api/guest_participant', GuestParticipantAPI, 'api/guest_participant')
-# From Cal application(8)
-router.register('api/calendar', CalendarAPI, 'api/calendar')
-router.register('api/filter', FilterAPI, 'api/filter')
 
 urlpatterns += router.urls
 urlpatterns += staticfiles_urlpatterns()

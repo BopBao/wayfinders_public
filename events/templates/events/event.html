@@ -54,11 +54,18 @@
     </div>
 
     <div class="events_details">
-        <div class="subtitle">Participants:</div>
+        <div class="inline">
+            <div class="subtitle">Participants:</div>
+            <div class="edit_img"><a href="/add_participant/{{event.pk}}" > <img src="{%static 'members/img/edit.png' %}" height="16" width="16"> </a></div> 
+        </div>
+        
         {% for participant in participants %}
             
             <div>
-                <a href="/profile/{{participant.member.pk}}"><b>{{participant.member}}</b></a> 
+                <div class="inline">
+                    <a href="/profile/{{participant.member.pk}}"><b>{{participant.member}}</b></a> 
+                    <div class="edit_img"><a href="/remove_participant/{{participant.pk}}/{{event.pk}}" > <img src="{%static 'members/img/edit.png' %}" height="16" width="16"> </a></div> 
+                </div>
                 {% if my_part == True %}
                     {% if participant.is_administrator == False and admin == True %}
                     {% endif %}

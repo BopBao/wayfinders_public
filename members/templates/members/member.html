@@ -108,7 +108,10 @@
         </div>
         {% endif %}
         {% for skill in member_skills %}
-            <div><a href="/skill/{{skill.skill.pk}}">{{skill.skill.name}}</a></div>
+                 <div class="inline">
+                    <div><a href="/skill/{{skill.skill.pk}}">{{skill.skill.name}}</a></div>
+                    <a href="/remove_skill_member/{{skill.pk}}/{{member.pk}}"><img src="{%static 'members/img/edit.png' %}" height="16" width="16"></a>
+                </div>            
         {% endfor %}
     </div>
 
@@ -126,7 +129,10 @@
         </div>
         {% endif %}
         {% for industry in member_industries %}
-            <div><a href="/industry/{{industry.industry.pk}}">{{industry.industry.name}}</a></div>
+                <div class="inline">
+                    <div><a href="/industry/{{industry.industry.pk}}">{{industry.industry.name}}</a></div>
+                    <a href="/remove_industry_member/{{industry.pk}}/{{member.pk}}"><img src="{%static 'members/img/edit.png' %}" height="16" width="16"></a>
+                </div>
         {% endfor %}
     </div>
     <div class="profile_section">

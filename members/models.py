@@ -115,10 +115,20 @@ class Gallery(models.Model):
         verbose_name_plural="Galleries"
 
 class Application(models.Model):
-    name = models.CharField(max_length=255)
+    surname = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
-    org_name = models.CharField(max_length=255)
-    org_email = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+    business_website = models.URLField(max_length=255, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(u'City/Town', max_length=255, blank=True, null=True)
+    province = models.CharField(max_length=255, blank=True, null=True)
+    postal_code = models.CharField(max_length=255, blank=True, null=True)
+    birthdate = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = PhoneNumberField()
+    referred_by = models.CharField(max_length=255)
+    other = models.TextField()
 
     def __str__(self):
         return '%s: %s' % (self.org_name, self.name)
@@ -127,4 +137,12 @@ class Application(models.Model):
         verbose_name="Application"
         verbose_name_plural="Applications"
 
-#class ApplicationUpload(models.Model):
+class ApplicationUpload(models.Model):
+    file = models.FileField(upload_to="application_file")
+
+    def __str__(self):
+        return '%s' % (self.file)
+
+    class Meta:
+        verbose_name="Application Upload"
+        verbose_name_plural="Application Uploads"
